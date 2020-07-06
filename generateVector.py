@@ -5,17 +5,18 @@ from nltk.tokenize import word_tokenize
 import numpy
 import pandas
 import os
+import boto3
 
 
 def createCSV(str1, str2, result):
-    if (os.path.isfile('Levenshtein Distance.csv'))==False:
+    if (os.path.isfile('trainVector.csv'))==False:
         mydict = {
             'current_word': str1,
             'next_word': str2,
             'distance': result
         }
         dataFrame = pandas.DataFrame(mydict, index=[0])
-        dataFrame.to_csv('Levenshtein Distance.csv', mode='a', index=False)
+        dataFrame.to_csv('trainVector.csv', mode='a', index=False)
     else:
         mydict = {
             'current_word': str1,
@@ -23,7 +24,7 @@ def createCSV(str1, str2, result):
             'distance': result
         }
         dataFrame = pandas.DataFrame(mydict, index=[0])
-        dataFrame.to_csv('Levenshtein Distance.csv', mode='a', index=False,header=False)
+        dataFrame.to_csv('trainVector.csv', mode='a', index=False,header=False)
 
 
 def levenshtein_distance(str1, str2):
@@ -52,15 +53,20 @@ def levenshtein_distance(str1, str2):
     createCSV(str1, str2, result)
 
 
-stop_words_list = []
-stopWords = set(stopwords.words('english'))
-with open('001.txt') as f_read:
-    text = f_read.read()
-    content = text.split()
-    for word in content:
-        if word not in stopWords:
-            stop_words_list.append(word)
-        if len(stop_words_list) > 1:
-            levenshtein_distance(stop_words_list[len(stop_words_list) - 1], stop_words_list[len(stop_words_list) - 2])
+def removeStopWords():
+    stop_words_list = []
+    stopWords = set(stopwords.words('english'))
+    with open('001.txt') as f_read:
+        text = f_read.read()
+        content = text.split()
+        for word in content:
+            if word not in stopWords:
+                stop_words_list.append(word)
+            if len(stop_words_list) > 1:
+                levenshtein_distance(stop_words_list[len(stop_words_list) - 1], stop_words_list[len(stop_words_list) - 2])
 
-    print(stop_words_list)
+    s3 = boto3.client('s3')
+    s3.upload_file('trainVector.csv', "traindatab00845637",'trainVector.csv')
+
+
+removeStopWords()
