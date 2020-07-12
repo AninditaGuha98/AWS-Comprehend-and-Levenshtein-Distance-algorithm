@@ -6,6 +6,7 @@ import numpy
 import pandas
 import os
 import boto3
+import glob
 
 
 def createCSV(str1, str2, result):
@@ -48,22 +49,22 @@ def levenshtein_distance(str1, str2):
                                                 distance_matrix[x - 1][y - 1])
 
     result = int(distance_matrix[m - 1][n - 1])
-    print(str1, str2)
-    print(result)
     createCSV(str1, str2, result)
 
 
 def removeStopWords():
     stop_words_list = []
     stopWords = set(stopwords.words('english'))
-    with open('001.txt') as f_read:
-        text = f_read.read()
-        content = text.split()
-        for word in content:
-            if word not in stopWords:
-                stop_words_list.append(word)
-            if len(stop_words_list) > 1:
-                levenshtein_distance(stop_words_list[len(stop_words_list) - 1], stop_words_list[len(stop_words_list) - 2])
+    for file in glob.glob('Train/*.txt'):
+        with open(file) as f_read:
+            text = f_read.read()
+            content = text.split()
+            for word in content:
+                if word not in stopWords:
+                    stop_words_list.append(word)
+                if len(stop_words_list) > 1:
+                    levenshtein_distance(stop_words_list[len(stop_words_list) - 1], stop_words_list[len(stop_words_list) - 2])
+        print("complete",file)
 
     s3 = boto3.client('s3')
     s3.upload_file('trainVector.csv', "traindatab00845637",'trainVector.csv')
