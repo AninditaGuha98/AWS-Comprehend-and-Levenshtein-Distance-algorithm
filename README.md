@@ -1,6 +1,3 @@
-# AWS-SageMaker
-
-
 
 <h2> AWS Comprehend</h2>
 <ul>
